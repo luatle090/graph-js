@@ -95,5 +95,4 @@ const mainProgram = async () => {
     printOutput(4, --finish);
     // printGraph(n);
 };
-
 mainProgram();
