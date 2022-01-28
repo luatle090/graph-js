@@ -28,7 +28,7 @@ const initMatrix = (n) => {
 async function readFile() {
     try {
         const data = await fs.readFile(
-            path.join(__dirname, "input.txt"),
+            path.join(__dirname, "../", "input.txt"),
             "utf8"
         );
         return data.split("\r\n");
@@ -38,7 +38,7 @@ async function readFile() {
 }
 
 function DFS(u, n) {
-    log(u + 1, ",");
+    write((u + 1).toString() + ",");
     visit[u] = false;
     for (let v = 0; v < n; v++) {
         if (visit[v] && matrix[u][v]) {
@@ -48,15 +48,18 @@ function DFS(u, n) {
     }
 }
 
-function DFSNotUseVisit(u, n) {
-    log(u + 1, ",");
-    for (let v = 0; v < n; v++) {
-        if (trace[v] === -1 && matrix[u][v]) {
-            trace[v] = u;
-            DFS(v, n);
+const allConnectedComponent = (n) => {
+    let count = 0;
+    for (let u = 0; u < n; u++) {
+        if (visit[u]) {
+            count++;
+            write("Thành phần liên thông thứ " + count + " gồm các đỉnh: ");
+            write("\n");
+            DFS(u, n);
+            write("\n\n");
         }
     }
-}
+};
 
 const printGraph = (n) => {
     for (let i = 0; i < n; i++) {
@@ -77,18 +80,6 @@ const inputMatrix = (n, lines) => {
     }
 };
 
-const printOutput = (start, finish) => {
-    if (visit[finish]) {
-        write("path from ", start, " to ", finish, " not found!");
-    } else {
-        while (start != finish) {
-            write(finish + "<-");
-            finish = trace[finish];
-        }
-        write(start.toString());
-    }
-};
-
 const mainProgram = async () => {
     let lines = await readFile();
     let [n, start, finish] = lines[0].split(" ").map((item) => {
@@ -96,9 +87,7 @@ const mainProgram = async () => {
     });
     initMatrix(n);
     inputMatrix(n, lines);
-    DFS(--start, n);
-    // DFSNotUseVisit(start, n);
-    printOutput(start, --finish);
+    allConnectedComponent(n);
     // printGraph(n);
 };
 

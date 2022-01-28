@@ -1,9 +1,12 @@
 const fs = require("fs").promises;
+const util = require("./Util");
 const path = require("path");
 const log = console.log;
 const write = process.stdout.write.bind(process.stdout);
-let visit = [];
+let oldVisit = [];
+let newVisit = [];
 let trace = [];
+let visit = [];
 let MAX = 20;
 let matrix = new Array(MAX);
 
@@ -21,7 +24,6 @@ const initMatrix = (n) => {
 
     for (let i = 0; i < n; i++) {
         visit[i] = true;
-        trace[i] = -1;
     }
 };
 
@@ -37,24 +39,30 @@ async function readFile() {
     }
 }
 
-function DFS(u, n) {
-    log(u + 1, ",");
+function BFS_ToanLoang(u, n) {
+    oldVisit.push(u);
     visit[u] = false;
-    for (let v = 0; v < n; v++) {
-        if (visit[v] && matrix[u][v]) {
-            trace[v] = u;
-            DFS(v, n);
-        }
-    }
-}
+    while (util.isArrayNotEmpty(oldVisit)) {
+        // xét các đỉnh u thuộc tập oldVisit
+        for (let i = 0; i < oldVisit.length; i++) {
+            u = oldVisit[i];
+            newVisit = [];
+            log(u + 1, ",");
 
-function DFSNotUseVisit(u, n) {
-    log(u + 1, ",");
-    for (let v = 0; v < n; v++) {
-        if (trace[v] === -1 && matrix[u][v]) {
-            trace[v] = u;
-            DFS(v, n);
+            // xét các đỉnh kề với u mà chưa thăm
+            for (let v = 0; v < n; v++) {
+                if (visit[v] && matrix[u][v]) {
+                    // đánh dấu là thăm và lưu lại vết
+                    // đẩy giá trị mới thăm vào tập mới
+                    visit[v] = false;
+                    trace[v] = u;
+                    newVisit.push(v);
+                }
+            }
         }
+
+        // gán tập mới vào tập old sau khi đã quét các đỉnh u từ tập old trước
+        oldVisit = newVisit.slice();
     }
 }
 
@@ -79,13 +87,13 @@ const inputMatrix = (n, lines) => {
 
 const printOutput = (start, finish) => {
     if (visit[finish]) {
-        write("path from ", start, " to ", finish, " not found!");
+        write("path from " + start + " to " + finish + " not found!");
     } else {
         while (start != finish) {
-            write(finish + "<-");
+            write(finish + 1 + "<-");
             finish = trace[finish];
         }
-        write(start.toString());
+        write((start + 1).toString());
     }
 };
 
@@ -96,10 +104,8 @@ const mainProgram = async () => {
     });
     initMatrix(n);
     inputMatrix(n, lines);
-    DFS(--start, n);
-    // DFSNotUseVisit(start, n);
+    BFS_ToanLoang(--start, n);
     printOutput(start, --finish);
     // printGraph(n);
 };
-
 mainProgram();
